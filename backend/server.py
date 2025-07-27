@@ -204,8 +204,12 @@ async def upload_users(
     if platform not in ["instagram", "x"]:
         raise HTTPException(status_code=400, detail="Platform instagram ya da x olmalıdır")
     
+    logger.info(f"Starting user upload for platform: {platform}, file: {file.filename}")
+    
     content = await file.read()
     usernames = process_csv_excel_file(content, file.content_type)
+    
+    logger.info(f"Processed {len(usernames)} usernames for platform {platform}")
     
     # Insert users into database
     users_to_insert = []
@@ -215,14 +219,18 @@ async def upload_users(
     
     if users_to_insert:
         # Remove existing users for this platform first
-        await db.users.delete_many({"platform": platform})
-        await db.users.insert_many(users_to_insert)
+        delete_result = await db.users.delete_many({"platform": platform})
+        logger.info(f"Deleted {delete_result.deleted_count} existing users for platform {platform}")
+        
+        insert_result = await db.users.insert_many(users_to_insert)
+        logger.info(f"Inserted {len(insert_result.inserted_ids)} new users")
     
     return {
         "success": True,
-        "message": f"{len(usernames)} kullanıcı başarıyla yüklendi",
+        "message": f"{len(usernames)} kullanıcı başarıyla yüklendi ({platform})",
         "count": len(usernames),
-        "platform": platform
+        "platform": platform,
+        "sample_users": usernames[:5]  # Show first 5 as sample
     }
 
 @api_router.post("/users/add", response_model=User)
