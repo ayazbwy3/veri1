@@ -238,12 +238,14 @@ async def upload_engagement(
     # Insert new engagements
     engagements_to_insert = []
     for username in usernames:
-        engagement = Engagement(
-            post_id=post_id,
-            username=username.replace('@', '').strip(),
-            platform=post["platform"]
-        )
-        engagements_to_insert.append(engagement.dict())
+        normalized_username = normalize_username(username)
+        if normalized_username:  # Only add if normalization didn't result in empty string
+            engagement = Engagement(
+                post_id=post_id,
+                username=normalized_username,
+                platform=post["platform"]
+            )
+            engagements_to_insert.append(engagement.dict())
     
     if engagements_to_insert:
         await db.engagements.insert_many(engagements_to_insert)
