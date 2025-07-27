@@ -578,28 +578,47 @@ function App() {
               </form>
             </div>
 
-            {/* Posts List */}
+            {/* Posts List with Status Indicators */}
             <div className="bg-white p-6 rounded-lg shadow-lg">
               <h3 className="text-xl font-bold mb-4">Gönderiler</h3>
               <div className="space-y-4">
                 {posts.map(post => (
                   <div key={post.id} className="border rounded-lg p-4">
                     <div className="flex justify-between items-start">
-                      <div>
-                        <h4 className="font-semibold">{post.title}</h4>
-                        <p className="text-sm text-gray-600">
-                          {post.platform.toUpperCase()} • {new Date(post.post_date).toLocaleDateString('tr-TR')}
-                        </p>
-                      </div>
-                      <div className="space-x-2">
-                        <FileUploader
-                          onUpload={(file) => handleEngagementUpload(post.id, file)}
-                          acceptedTypes={{
-                            'text/csv': ['.csv'],
-                            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx']
-                          }}
-                          text="Beğeni Verilerini Yükle"
-                        />
+                      <div className="flex-1">
+                        <div className="flex items-start justify-between mb-2">
+                          <div>
+                            <h4 className="font-semibold text-lg">{post.title}</h4>
+                            <p className="text-sm text-gray-600">
+                              {post.platform.toUpperCase()} • {new Date(post.post_date).toLocaleDateString('tr-TR')}
+                            </p>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            {/* Status Indicator */}
+                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                              post.has_engagement_data 
+                                ? 'bg-green-100 text-green-800' 
+                                : 'bg-yellow-100 text-yellow-800'
+                            }`}>
+                              {post.has_engagement_data 
+                                ? `✅ Veri Yüklendi (${post.engagement_count})` 
+                                : '⚠️ Veri Yüklenmemiş'
+                              }
+                            </span>
+                          </div>
+                        </div>
+                        
+                        {/* File Upload Area */}
+                        <div className="mt-4">
+                          <FileUploader
+                            onUpload={(file) => handleEngagementUpload(post.id, file)}
+                            acceptedTypes={{
+                              'text/csv': ['.csv'],
+                              'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx']
+                            }}
+                            text={post.has_engagement_data ? "Beğeni Verilerini Güncelle" : "Beğeni Verilerini Yükle"}
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
