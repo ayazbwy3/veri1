@@ -360,24 +360,31 @@ async def analyze_engagement(post_id: str, _: str = Depends(authenticate_admin))
     engagements = await db.engagements.find({"post_id": post_id}).to_list(1000)
     engaged_usernames = [eng["username"] for eng in engagements]
     
-    # Debug logging to help diagnose matching issues
-    logger.info(f"Analysis Debug - Post: {post['title']}")
-    logger.info(f"Management users ({len(management_usernames)}): {management_usernames[:5]}...")
-    logger.info(f"Engaged users ({len(engaged_usernames)}): {engaged_usernames[:5]}...")
+    # Detailed debug logging
+    logger.info(f"=== ANALYSIS DEBUG ===")
+    logger.info(f"Post: {post['title']} ({post['platform']})")
+    logger.info(f"Management users count: {len(management_usernames)}")
+    logger.info(f"Management users sample: {management_usernames[:5]}")
+    logger.info(f"Engaged users count: {len(engaged_usernames)}")
+    logger.info(f"Engaged users sample: {engaged_usernames[:5]}")
     
-    # Calculate analysis with normalized comparison
+    # Calculate analysis with exact string matching
     total_management = len(management_usernames)
     engaged_users = []
     not_engaged_users = []
     
+    # Use set for faster lookup
+    engaged_set = set(engaged_usernames)
+    
     for username in management_usernames:
-        if username in engaged_usernames:
+        if username in engaged_set:
             engaged_users.append(username)
+            logger.debug(f"MATCH: {username}")
         else:
             not_engaged_users.append(username)
+            logger.debug(f"NO_MATCH: {username}")
     
-    # Additional debug info
-    logger.info(f"Engaged: {len(engaged_users)}, Not Engaged: {len(not_engaged_users)}")
+    logger.info(f"Final results - Engaged: {len(engaged_users)}, Not Engaged: {len(not_engaged_users)}")
     
     engagement_percentage = (len(engaged_users) / total_management * 100) if total_management > 0 else 0
     
