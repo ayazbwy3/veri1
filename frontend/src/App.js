@@ -637,17 +637,38 @@ function App() {
               <div className="grid gap-4">
                 {posts.map(post => (
                   <div key={post.id} className="border rounded-lg p-4 flex justify-between items-center">
-                    <div>
-                      <h4 className="font-semibold">{post.title}</h4>
-                      <p className="text-sm text-gray-600">{post.platform.toUpperCase()}</p>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="font-semibold text-lg">{post.title}</h4>
+                          <p className="text-sm text-gray-600">{post.platform.toUpperCase()}</p>
+                        </div>
+                        <div className="flex items-center space-x-3">
+                          {/* Status Badge */}
+                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                            post.has_engagement_data 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-gray-100 text-gray-600'
+                          }`}>
+                            {post.has_engagement_data 
+                              ? `✅ ${post.engagement_count} etkileşim` 
+                              : '⚠️ Veri yok'
+                            }
+                          </span>
+                          <button
+                            onClick={() => handleAnalyzePost(post.id)}
+                            disabled={loading || !post.has_engagement_data}
+                            className={`px-4 py-2 rounded-md transition-colors ${
+                              !post.has_engagement_data 
+                                ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                                : 'bg-purple-500 text-white hover:bg-purple-600'
+                            }`}
+                          >
+                            {loading ? 'Analiz Ediliyor...' : 'Analiz Et'}
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                    <button
-                      onClick={() => handleAnalyzePost(post.id)}
-                      className="bg-purple-500 text-white px-4 py-2 rounded-md hover:bg-purple-600"
-                      disabled={loading}
-                    >
-                      {loading ? 'Analiz Ediliyor...' : 'Analiz Et'}
-                    </button>
                   </div>
                 ))}
               </div>
