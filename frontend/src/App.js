@@ -292,20 +292,28 @@ function App() {
     }
   };
 
-  const deletePost = async (postId, postTitle) => {
-    if (window.confirm(`"${postTitle}" gönderisini ve tüm etkileşim verilerini silmek istediğinizden emin misiniz?`)) {
-      try {
-        await axios.delete(`${API}/posts/${postId}`);
-        showNotification('✅ Gönderi başarıyla silindi!', 'success');
-        fetchPosts();
-        // Clear analysis if deleted post was being analyzed
-        if (analysis && analysis.post_id === postId) {
-          setAnalysis(null);
-        }
-      } catch (error) {
-        const errorMsg = error.response?.data?.detail || error.message;
-        showNotification(`❌ Silme hatası: ${errorMsg}`, 'error');
-      }
+  const debugNormalization = async (postId) => {
+    try {
+      const response = await axios.get(`${API}/debug/normalization/${postId}`);
+      console.log('DEBUG DATA:', response.data);
+      
+      // Show debug info in a more readable format
+      const debug = response.data;
+      let debugText = `=== DEBUG BİLGİSİ ===\n`;
+      debugText += `Gönderi: ${debug.post_title}\n`;
+      debugText += `Platform: ${debug.platform}\n\n`;
+      debugText += `Yönetici Kullanıcıları (${debug.management_users.count}):\n`;
+      debugText += debug.management_users.all.slice(0, 10).join(', ') + '\n\n';
+      debugText += `Etkileşim Kullanıcıları (${debug.engagement_users.count}):\n`;
+      debugText += debug.engagement_users.all.slice(0, 10).join(', ') + '\n\n';
+      debugText += `Eşleşenler (${debug.analysis.matches.count}):\n`;
+      debugText += debug.analysis.matches.users.slice(0, 10).join(', ') + '\n\n';
+      debugText += `Eşleşmeyenler (${debug.analysis.mismatches.count}):\n`;
+      debugText += debug.analysis.mismatches.users.slice(0, 10).join(', ') + '\n\n';
+      
+      alert(debugText);
+    } catch (error) {
+      showNotification('❌ Debug hatası: ' + (error.response?.data?.detail || error.message), 'error');
     }
   };
 
