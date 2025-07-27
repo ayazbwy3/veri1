@@ -40,7 +40,7 @@ ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD = "admin123"  # This should be hashed in production
 
 # Create the main app without a prefix
-app = FastAPI(title="Sosyal Medya Etkileşim Takip Sistemi")
+app = FastAPI(title="AK Parti Niğde Gençlik Kolları | SMT Sistemi")
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
