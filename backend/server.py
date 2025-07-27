@@ -369,7 +369,45 @@ async def get_weekly_report(_: str = Depends(authenticate_admin)):
         }
     }
 
-@api_router.get("/export/pdf/{post_id}")
+@api_router.get("/debug/normalization/{post_id}")
+async def debug_normalization(post_id: str, _: str = Depends(authenticate_admin)):
+    """Debug endpoint to check username normalization and matching"""
+    
+    # Get post
+    post = await db.posts.find_one({"id": post_id})
+    if not post:
+        raise HTTPException(status_code=404, detail="Gönderi bulunamadı")
+    
+    # Get management users
+    management_users = await db.users.find({"platform": post["platform"]}).to_list(1000)
+    management_usernames = [(user["username"], user["username"]) for user in management_users]
+    
+    # Get engagement users
+    engagements = await db.engagements.find({"post_id": post_id}).to_list(1000)
+    engagement_usernames = [(eng["username"], eng["username"]) for eng in engagements]
+    
+    # Find matches and mismatches
+    matches = []
+    mismatches = []
+    
+    for mgmt_user in [u[0] for u in management_usernames]:
+        if mgmt_user in [e[0] for e in engagement_usernames]:
+            matches.append(mgmt_user)
+        else:
+            mismatches.append(mgmt_user)
+    
+    return {
+        "post_title": post["title"],
+        "platform": post["platform"],
+        "management_users": dict(management_usernames[:10]),  # First 10 for display
+        "engagement_users": dict(engagement_usernames[:10]),  # First 10 for display
+        "total_management": len(management_usernames),
+        "total_engagement": len(engagement_usernames),
+        "matches": matches[:10],  # First 10 matches
+        "mismatches": mismatches[:10],  # First 10 mismatches
+        "match_count": len(matches),
+        "mismatch_count": len(mismatches)
+    }
 async def export_analysis_pdf(post_id: str, _: str = Depends(authenticate_admin)):
     analysis = await analyze_engagement(post_id)
     
