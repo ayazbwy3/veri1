@@ -179,6 +179,9 @@ backend:
         - working: true
           agent: "testing"
           comment: "✅ COMPREHENSIVE TESTING COMPLETED: PDF export API working perfectly. Successfully generated valid PDF file (2150 bytes) with proper PDF header. Export includes analysis data in Turkish with proper formatting using reportlab library."
+        - working: true
+          agent: "testing"
+          comment: "✅ RETESTED AND CONFIRMED: Fixed missing route decorator issue. PDF export now working correctly - generates valid PDF files (2153 bytes) with proper PDF header and Turkish content formatting."
 
 frontend:
   - task: "Turkish Login Interface - Password protected admin panel"
