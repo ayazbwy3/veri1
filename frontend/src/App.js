@@ -72,10 +72,10 @@ function App() {
               <span className="text-3xl">📊</span>
             </div>
             <h1 className="text-3xl font-bold text-white mb-2">
-              Sosyal Medya Takip
+              AK Parti Niğde Gençlik Kolları - SMT Sistemi
             </h1>
             <p className="text-gray-300 text-sm">
-              Etkileşim analizi ve raporlama sistemi
+              Etkileşim analizi ve Raporlama sistemi 
             </p>
           </div>
           
@@ -124,9 +124,9 @@ function App() {
           
           <div className="mt-6 p-4 bg-blue-500/20 rounded-lg border border-blue-400/30">
             <p className="text-sm text-blue-200 text-center">
-              <span className="font-medium">Demo Bilgileri:</span><br />
-              Kullanıcı Adı: <span className="font-mono">admin</span><br />
-              Şifre: <span className="font-mono">admin123</span>
+              <span className="font-medium">Sistem Bilgileri:</span><br />
+              Geliştirici: <span className="font-mono">Muhammed Ayaz</span><br />
+              Yapım: <span className="font-mono"> AyazDigital - @ayazbwy tarafından geliştirilmiştir.</span>
             </p>
           </div>
         </div>
@@ -425,7 +425,7 @@ function App() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-bold text-gray-800">
-              Sosyal Medya Etkileşim Takip Sistemi
+              AK Parti Niğde Gençlik Kolları - Sosyal Medya Takip Sistemi
             </h1>
             <button
               onClick={() => setIsLoggedIn(false)}
