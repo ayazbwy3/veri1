@@ -276,18 +276,32 @@ async def analyze_engagement(post_id: str, _: str = Depends(authenticate_admin))
     if not post:
         raise HTTPException(status_code=404, detail="Gönderi bulunamadı")
     
-    # Get management users for this platform (normalize their usernames for comparison)
+    # Get management users for this platform
     management_users = await db.users.find({"platform": post["platform"]}).to_list(1000)
     management_usernames = [user["username"] for user in management_users]
     
-    # Get engagements for this post (usernames already normalized when inserted)
+    # Get engagements for this post
     engagements = await db.engagements.find({"post_id": post_id}).to_list(1000)
     engaged_usernames = [eng["username"] for eng in engagements]
     
+    # Debug logging to help diagnose matching issues
+    logger.info(f"Analysis Debug - Post: {post['title']}")
+    logger.info(f"Management users ({len(management_usernames)}): {management_usernames[:5]}...")
+    logger.info(f"Engaged users ({len(engaged_usernames)}): {engaged_usernames[:5]}...")
+    
     # Calculate analysis with normalized comparison
     total_management = len(management_usernames)
-    engaged_users = [u for u in management_usernames if u in engaged_usernames]
-    not_engaged_users = [u for u in management_usernames if u not in engaged_usernames]
+    engaged_users = []
+    not_engaged_users = []
+    
+    for username in management_usernames:
+        if username in engaged_usernames:
+            engaged_users.append(username)
+        else:
+            not_engaged_users.append(username)
+    
+    # Additional debug info
+    logger.info(f"Engaged: {len(engaged_users)}, Not Engaged: {len(not_engaged_users)}")
     
     engagement_percentage = (len(engaged_users) / total_management * 100) if total_management > 0 else 0
     
