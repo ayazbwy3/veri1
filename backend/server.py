@@ -100,6 +100,20 @@ def authenticate_admin(credentials: HTTPBasicCredentials = Depends(security)):
     return credentials.username
 
 # Helper functions
+def normalize_username(username: str) -> str:
+    """Normalize username for accurate comparison"""
+    if not username:
+        return ""
+    
+    # Remove @ symbol, convert to lowercase, strip whitespace
+    normalized = username.replace('@', '').lower().strip()
+    
+    # Remove common punctuation and special characters that might cause mismatches
+    import re
+    normalized = re.sub(r'[._\-\s]+', '', normalized)
+    
+    return normalized
+
 def process_csv_excel_file(file_content: bytes, file_type: str) -> List[str]:
     """Process CSV or Excel file and return list of usernames"""
     try:
@@ -110,8 +124,10 @@ def process_csv_excel_file(file_content: bytes, file_type: str) -> List[str]:
         
         # Get first column as usernames, clean and filter
         usernames = df.iloc[:, 0].dropna().astype(str).str.strip().tolist()
-        # Remove empty strings and @ symbols
-        usernames = [u.replace('@', '').strip() for u in usernames if u.strip()]
+        # Remove empty strings and @ symbols, normalize usernames
+        usernames = [normalize_username(u) for u in usernames if u.strip()]
+        # Filter out empty results after normalization
+        usernames = [u for u in usernames if u]
         return usernames
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Dosya işlenirken hata: {str(e)}")
