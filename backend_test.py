@@ -621,6 +621,10 @@ class BackendTester:
         self.test_weekly_reports()
         self.test_pdf_export()
         
+        # NEW: Enhanced CSV Data Matching Tests (Focus of this review)
+        self.test_csv_data_matching_system()
+        self.test_post_deletion_cascade()
+        
         # Summary
         print("\n" + "=" * 80)
         print("📊 TEST SUMMARY")
@@ -642,6 +646,14 @@ class BackendTester:
                     print(f"  - {test['test']}: {test['message']}")
                     if test['details']:
                         print(f"    Details: {test['details']}")
+        
+        # Special focus on CSV matching results
+        csv_tests = [t for t in self.test_results if 'CSV Matching' in t['test'] or 'Post Deletion' in t['test']]
+        if csv_tests:
+            print(f"\n🔍 CSV DATA MATCHING SYSTEM RESULTS ({len(csv_tests)} tests):")
+            for test in csv_tests:
+                status = "✅" if test['success'] else "❌"
+                print(f"  {status} {test['test']}: {test['message']}")
         
         return passed_tests == total_tests
 
