@@ -312,31 +312,37 @@ async def upload_engagement(
     if not post:
         raise HTTPException(status_code=404, detail="Gönderi bulunamadı")
     
+    logger.info(f"Starting engagement upload for post: {post['title']}")
+    
     content = await file.read()
     usernames = process_csv_excel_file(content, file.content_type)
     
+    logger.info(f"Processed {len(usernames)} engagement usernames")
+    
     # Clear existing engagements for this post
-    await db.engagements.delete_many({"post_id": post_id})
+    delete_result = await db.engagements.delete_many({"post_id": post_id})
+    logger.info(f"Deleted {delete_result.deleted_count} existing engagements for post")
     
     # Insert new engagements
     engagements_to_insert = []
     for username in usernames:
-        normalized_username = normalize_username(username)
-        if normalized_username:  # Only add if normalization didn't result in empty string
+        if username:  # Only add if normalization didn't result in empty string
             engagement = Engagement(
                 post_id=post_id,
-                username=normalized_username,
+                username=username,
                 platform=post["platform"]
             )
             engagements_to_insert.append(engagement.dict())
     
     if engagements_to_insert:
-        await db.engagements.insert_many(engagements_to_insert)
+        insert_result = await db.engagements.insert_many(engagements_to_insert)
+        logger.info(f"Inserted {len(insert_result.inserted_ids)} new engagements")
     
     return {
         "success": True,
-        "message": f"{len(usernames)} etkileşim başarıyla yüklendi",
-        "count": len(usernames)
+        "message": f"{len(engagements_to_insert)} etkileşim başarıyla yüklendi",
+        "count": len(engagements_to_insert),
+        "sample_users": usernames[:5]  # Show first 5 as sample
     }
 
 @api_router.get("/engagements/analysis/{post_id}", response_model=EngagementAnalysis)
