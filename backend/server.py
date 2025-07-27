@@ -505,6 +505,7 @@ async def debug_normalization(post_id: str, _: str = Depends(authenticate_admin)
             }
         }
     }
+@api_router.get("/export/pdf/{post_id}")
 async def export_analysis_pdf(post_id: str, _: str = Depends(authenticate_admin)):
     analysis = await analyze_engagement(post_id)
     
