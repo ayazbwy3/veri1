@@ -362,6 +362,22 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-100">
+      {/* Notification System */}
+      {notification.show && (
+        <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg border-l-4 ${
+          notification.type === 'success' 
+            ? 'bg-green-50 border-green-400 text-green-800' 
+            : 'bg-red-50 border-red-400 text-red-800'
+        } transform transition-all duration-300 ease-in-out`}>
+          <div className="flex items-center">
+            <span className="mr-2">
+              {notification.type === 'success' ? '✅' : '❌'}
+            </span>
+            <p className="font-medium">{notification.message}</p>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <header className="bg-white shadow-lg">
         <div className="container mx-auto px-4 py-4">
