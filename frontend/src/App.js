@@ -292,6 +292,23 @@ function App() {
     }
   };
 
+  const deletePost = async (postId, postTitle) => {
+    if (window.confirm(`"${postTitle}" gönderisini ve tüm etkileşim verilerini silmek istediğinizden emin misiniz?`)) {
+      try {
+        await axios.delete(`${API}/posts/${postId}`);
+        showNotification('✅ Gönderi başarıyla silindi!', 'success');
+        fetchPosts();
+        // Clear analysis if deleted post was being analyzed
+        if (analysis && analysis.post_id === postId) {
+          setAnalysis(null);
+        }
+      } catch (error) {
+        const errorMsg = error.response?.data?.detail || error.message;
+        showNotification(`❌ Silme hatası: ${errorMsg}`, 'error');
+      }
+    }
+  };
+
   const debugNormalization = async (postId) => {
     try {
       const response = await axios.get(`${API}/debug/normalization/${postId}`);
