@@ -505,7 +505,7 @@ function App() {
 
               {/* Manual User Addition */}
               <div className="mb-6">
-                <h3 className="text-lg font-semibold mb-4">Tek Kullanıcı Ekleme</h3>
+                <h3 className="text-lg font-semibold mb-4">Manuel Kullanıcı Ekleme</h3>
                 <form onSubmit={handleAddUser} className="flex gap-4">
                   <input
                     type="text"
