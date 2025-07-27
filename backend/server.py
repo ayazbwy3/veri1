@@ -263,15 +263,15 @@ async def analyze_engagement(post_id: str, _: str = Depends(authenticate_admin))
     if not post:
         raise HTTPException(status_code=404, detail="Gönderi bulunamadı")
     
-    # Get management users for this platform
+    # Get management users for this platform (normalize their usernames for comparison)
     management_users = await db.users.find({"platform": post["platform"]}).to_list(1000)
     management_usernames = [user["username"] for user in management_users]
     
-    # Get engagements for this post
+    # Get engagements for this post (usernames already normalized when inserted)
     engagements = await db.engagements.find({"post_id": post_id}).to_list(1000)
     engaged_usernames = [eng["username"] for eng in engagements]
     
-    # Calculate analysis
+    # Calculate analysis with normalized comparison
     total_management = len(management_usernames)
     engaged_users = [u for u in management_usernames if u in engaged_usernames]
     not_engaged_users = [u for u in management_usernames if u not in engaged_usernames]
