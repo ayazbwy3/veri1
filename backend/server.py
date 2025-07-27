@@ -181,7 +181,11 @@ async def add_user_manually(
     if user_data.platform not in ["instagram", "x"]:
         raise HTTPException(status_code=400, detail="Platform instagram ya da x olmalıdır")
     
-    user = User(username=user_data.username.replace('@', '').strip(), platform=user_data.platform)
+    normalized_username = normalize_username(user_data.username)
+    if not normalized_username:
+        raise HTTPException(status_code=400, detail="Geçerli bir kullanıcı adı girilmelidir")
+    
+    user = User(username=normalized_username, platform=user_data.platform)
     await db.users.insert_one(user.dict())
     return user
 
