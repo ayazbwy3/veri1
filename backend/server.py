@@ -212,10 +212,23 @@ async def create_post(post_data: PostCreate, _: str = Depends(authenticate_admin
     await db.posts.insert_one(post.dict())
     return post
 
-@api_router.get("/posts", response_model=List[Post])
+@api_router.get("/posts", response_model=List[Dict[str, Any]])
 async def get_posts(_: str = Depends(authenticate_admin)):
     posts = await db.posts.find().sort("created_at", -1).to_list(100)
-    return [Post(**post) for post in posts]
+    
+    # Add engagement data status for each post
+    posts_with_status = []
+    for post in posts:
+        post_dict = Post(**post).dict()
+        
+        # Check if this post has engagement data
+        engagement_count = await db.engagements.count_documents({"post_id": post["id"]})
+        post_dict["has_engagement_data"] = engagement_count > 0
+        post_dict["engagement_count"] = engagement_count
+        
+        posts_with_status.append(post_dict)
+    
+    return posts_with_status
 
 # Engagement Routes
 @api_router.post("/engagements/upload")
