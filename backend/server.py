@@ -101,35 +101,87 @@ def authenticate_admin(credentials: HTTPBasicCredentials = Depends(security)):
 
 # Helper functions
 def normalize_username(username: str) -> str:
-    """Normalize username for accurate comparison"""
-    if not username:
+    """Normalize username for accurate comparison - more aggressive approach"""
+    if not username or pd.isna(username):
         return ""
     
-    # Remove @ symbol, convert to lowercase, strip whitespace
-    normalized = username.replace('@', '').lower().strip()
+    # Convert to string and strip whitespace
+    username = str(username).strip()
     
-    # Remove common punctuation and special characters that might cause mismatches
+    if not username:
+        return ""
+        
+    # Remove @ symbol and common prefixes
+    username = username.replace('@', '')
+    
+    # Convert to lowercase for case-insensitive comparison
+    username = username.lower()
+    
+    # Remove all whitespace, dots, underscores, and hyphens for consistent matching
     import re
-    normalized = re.sub(r'[._\-\s]+', '', normalized)
+    username = re.sub(r'[\s\._\-]+', '', username)
     
-    return normalized
+    # Remove any remaining special characters except alphanumeric
+    username = re.sub(r'[^a-z0-9]', '', username)
+    
+    return username
 
 def process_csv_excel_file(file_content: bytes, file_type: str) -> List[str]:
-    """Process CSV or Excel file and return list of usernames"""
+    """Process CSV or Excel file and return list of usernames with improved error handling"""
     try:
-        if file_type.startswith('text/csv'):
-            df = pd.read_csv(io.StringIO(file_content.decode('utf-8')))
+        # Read file based on type
+        if file_type.startswith('text/csv') or 'csv' in file_type.lower():
+            # Try different encodings for CSV
+            for encoding in ['utf-8', 'utf-8-sig', 'latin1', 'cp1252']:
+                try:
+                    df = pd.read_csv(io.StringIO(file_content.decode(encoding)))
+                    break
+                except UnicodeDecodeError:
+                    continue
+            else:
+                raise Exception("CSV dosyası okunamadı - encoding sorunu")
         else:  # Excel file
             df = pd.read_excel(io.BytesIO(file_content))
         
-        # Get first column as usernames, clean and filter
-        usernames = df.iloc[:, 0].dropna().astype(str).str.strip().tolist()
-        # Remove empty strings and @ symbols, normalize usernames
-        usernames = [normalize_username(u) for u in usernames if u.strip()]
-        # Filter out empty results after normalization
-        usernames = [u for u in usernames if u]
-        return usernames
+        logger.info(f"File read successfully. Shape: {df.shape}, Columns: {list(df.columns)}")
+        
+        # Try to find username column - check multiple possible column names
+        username_column = None
+        possible_columns = ['username', 'kullanici_adi', 'kullanıcı_adı', 'user', 'name', 'isim']
+        
+        # First try exact column name matches
+        for col in possible_columns:
+            if col in df.columns:
+                username_column = col
+                break
+        
+        # If no match found, use first column
+        if username_column is None:
+            username_column = df.columns[0]
+            logger.info(f"Using first column as username: {username_column}")
+        else:
+            logger.info(f"Found username column: {username_column}")
+        
+        # Extract usernames from the identified column
+        raw_usernames = df[username_column].dropna().astype(str).tolist()
+        logger.info(f"Raw usernames count: {len(raw_usernames)}, Sample: {raw_usernames[:3]}")
+        
+        # Normalize all usernames
+        normalized_usernames = []
+        for username in raw_usernames:
+            normalized = normalize_username(username)
+            if normalized:  # Only add if normalization didn't result in empty string
+                normalized_usernames.append(normalized)
+                
+        logger.info(f"Normalized usernames count: {len(normalized_usernames)}, Sample: {normalized_usernames[:3]}")
+        
+        if not normalized_usernames:
+            raise Exception("Dosyada geçerli kullanıcı adı bulunamadı")
+            
+        return normalized_usernames
+        
     except Exception as e:
+        logger.error(f"File processing error: {str(e)}")
         raise HTTPException(status_code=400, detail=f"Dosya işlenirken hata: {str(e)}")
 
 # Routes
