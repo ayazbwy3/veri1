@@ -691,6 +691,13 @@ function App() {
                           >
                             {loading ? 'Analiz Ediliyor...' : 'Analiz Et'}
                           </button>
+                          <button
+                            onClick={() => deletePost(post.id, post.title)}
+                            className="px-3 py-2 bg-red-500 text-white text-sm rounded-md hover:bg-red-600 transition-colors"
+                            title="Gönderiyi Sil"
+                          >
+                            🗑️ Sil
+                          </button>
                         </div>
                       </div>
                     </div>
