@@ -230,7 +230,17 @@ async def get_posts(_: str = Depends(authenticate_admin)):
     
     return posts_with_status
 
-# Engagement Routes
+@api_router.delete("/posts/{post_id}")
+async def delete_post(post_id: str, _: str = Depends(authenticate_admin)):
+    # First delete all engagements for this post
+    await db.engagements.delete_many({"post_id": post_id})
+    
+    # Then delete the post
+    result = await db.posts.delete_one({"id": post_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Gönderi bulunamadı")
+    
+    return {"message": "Gönderi ve ilgili etkileşim verileri başarıyla silindi"}
 @api_router.post("/engagements/upload")
 async def upload_engagement(
     post_id: str = Form(...),
