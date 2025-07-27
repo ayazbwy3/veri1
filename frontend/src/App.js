@@ -279,12 +279,16 @@ function App() {
     setLoading(false);
   };
 
-  const deleteUser = async (userId) => {
-    if (window.confirm('Bu kullanıcıyı silmek istediğinizden emin misiniz?')) {
+  const deletePost = async (postId, postTitle) => {
+    if (window.confirm(`"${postTitle}" gönderisini ve tüm etkileşim verilerini silmek istediğinizden emin misiniz?`)) {
       try {
-        await axios.delete(`${API}/users/${userId}`);
-        showNotification('✅ Kullanıcı başarıyla silindi!', 'success');
-        fetchUsers();
+        await axios.delete(`${API}/posts/${postId}`);
+        showNotification('✅ Gönderi başarıyla silindi!', 'success');
+        fetchPosts();
+        // Clear analysis if deleted post was being analyzed
+        if (analysis && analysis.post_id === postId) {
+          setAnalysis(null);
+        }
       } catch (error) {
         const errorMsg = error.response?.data?.detail || error.message;
         showNotification(`❌ Silme hatası: ${errorMsg}`, 'error');
