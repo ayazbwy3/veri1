@@ -190,7 +190,7 @@ function App() {
     setLoading(false);
   };
 
-  // Upload handlers
+  // Upload handlers with improved notifications
   const handleUserUpload = async (file) => {
     setLoading(true);
     const formData = new FormData();
@@ -201,17 +201,21 @@ function App() {
       const response = await axios.post(`${API}/users/upload`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      alert(response.data.message);
+      showNotification(`✅ ${response.data.message}`, 'success');
       fetchUsers();
     } catch (error) {
-      alert('Dosya yükleme hatası: ' + (error.response?.data?.detail || error.message));
+      const errorMsg = error.response?.data?.detail || error.message;
+      showNotification(`❌ Dosya yükleme hatası: ${errorMsg}`, 'error');
     }
     setLoading(false);
   };
 
   const handleAddUser = async (e) => {
     e.preventDefault();
-    if (!newUsername.trim()) return;
+    if (!newUsername.trim()) {
+      showNotification('❌ Lütfen bir kullanıcı adı girin', 'error');
+      return;
+    }
 
     try {
       await axios.post(`${API}/users/add`, {
@@ -219,10 +223,11 @@ function App() {
         platform: selectedPlatform
       });
       setNewUsername('');
-      alert('Kullanıcı başarıyla eklendi!');
+      showNotification('✅ Kullanıcı başarıyla eklendi!', 'success');
       fetchUsers();
     } catch (error) {
-      alert('Kullanıcı ekleme hatası: ' + (error.response?.data?.detail || error.message));
+      const errorMsg = error.response?.data?.detail || error.message;
+      showNotification(`❌ Kullanıcı ekleme hatası: ${errorMsg}`, 'error');
     }
   };
 
@@ -234,10 +239,11 @@ function App() {
         post_date: new Date(postForm.post_date).toISOString()
       });
       setPostForm({ title: '', platform: 'instagram', post_id: '', post_date: '' });
-      alert('Gönderi başarıyla eklendi!');
+      showNotification('✅ Gönderi başarıyla eklendi!', 'success');
       fetchPosts();
     } catch (error) {
-      alert('Gönderi ekleme hatası: ' + (error.response?.data?.detail || error.message));
+      const errorMsg = error.response?.data?.detail || error.message;
+      showNotification(`❌ Gönderi ekleme hatası: ${errorMsg}`, 'error');
     }
   };
 
@@ -251,9 +257,11 @@ function App() {
       const response = await axios.post(`${API}/engagements/upload`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      alert(response.data.message);
+      showNotification(`✅ ${response.data.message}`, 'success');
+      fetchPosts(); // Refresh posts to update status
     } catch (error) {
-      alert('Etkileşim yükleme hatası: ' + (error.response?.data?.detail || error.message));
+      const errorMsg = error.response?.data?.detail || error.message;
+      showNotification(`❌ Etkileşim yükleme hatası: ${errorMsg}`, 'error');
     }
     setLoading(false);
   };
@@ -263,8 +271,10 @@ function App() {
     try {
       const response = await axios.get(`${API}/engagements/analysis/${postId}`);
       setAnalysis(response.data);
+      showNotification('✅ Analiz başarıyla tamamlandı!', 'success');
     } catch (error) {
-      alert('Analiz hatası: ' + (error.response?.data?.detail || error.message));
+      const errorMsg = error.response?.data?.detail || error.message;
+      showNotification(`❌ Analiz hatası: ${errorMsg}`, 'error');
     }
     setLoading(false);
   };
@@ -273,10 +283,11 @@ function App() {
     if (window.confirm('Bu kullanıcıyı silmek istediğinizden emin misiniz?')) {
       try {
         await axios.delete(`${API}/users/${userId}`);
-        alert('Kullanıcı silindi!');
+        showNotification('✅ Kullanıcı başarıyla silindi!', 'success');
         fetchUsers();
       } catch (error) {
-        alert('Silme hatası: ' + (error.response?.data?.detail || error.message));
+        const errorMsg = error.response?.data?.detail || error.message;
+        showNotification(`❌ Silme hatası: ${errorMsg}`, 'error');
       }
     }
   };
