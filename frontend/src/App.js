@@ -622,6 +622,14 @@ function App() {
                                 : '⚠️ Veri Yüklenmemiş'
                               }
                             </span>
+                            {/* Delete Button */}
+                            <button
+                              onClick={() => deletePost(post.id, post.title)}
+                              className="px-3 py-1 bg-red-500 text-white text-xs rounded-full hover:bg-red-600 transition-colors"
+                              title="Gönderiyi Sil"
+                            >
+                              🗑️ Sil
+                            </button>
                           </div>
                         </div>
                         
