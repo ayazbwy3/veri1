@@ -717,6 +717,18 @@ function App() {
                             {loading ? 'Analiz Ediliyor...' : 'Analiz Et'}
                           </button>
                           <button
+                            onClick={() => debugNormalization(post.id)}
+                            disabled={!post.has_engagement_data}
+                            className={`px-3 py-2 rounded-md text-sm transition-colors ${
+                              !post.has_engagement_data 
+                                ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                                : 'bg-orange-500 text-white hover:bg-orange-600'
+                            }`}
+                            title="Veri Eşleşmesini Debug Et"
+                          >
+                            🔍 Debug
+                          </button>
+                          <button
                             onClick={() => deletePost(post.id, post.title)}
                             className="px-3 py-2 bg-red-500 text-white text-sm rounded-md hover:bg-red-600 transition-colors"
                             title="Gönderiyi Sil"
