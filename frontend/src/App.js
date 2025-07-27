@@ -32,65 +32,103 @@ function App() {
   const [analysis, setAnalysis] = useState(null);
   const [weeklyReport, setWeeklyReport] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
 
-  // Login Component
+  // Notification system
+  const showNotification = (message, type = 'success') => {
+    setNotification({ show: true, message, type });
+    setTimeout(() => {
+      setNotification({ show: false, message: '', type: 'success' });
+    }, 4000);
+  };
+
+  // Login Component with modern design
   const LoginForm = () => {
     const [credentials, setCredentials] = useState({ username: '', password: '' });
+    const [loginLoading, setLoginLoading] = useState(false);
 
     const handleLogin = async (e) => {
       e.preventDefault();
+      setLoginLoading(true);
       try {
         setupAuth(credentials.username, credentials.password);
         await axios.post(`${API}/login`);
         setIsLoggedIn(true);
+        showNotification('Başarıyla giriş yapıldı! Hoş geldiniz.', 'success');
         fetchUsers();
         fetchPosts();
       } catch (error) {
-        alert('Giriş başarısız! Kullanıcı adı: admin, Şifre: admin123');
+        showNotification('Giriş başarısız! Kullanıcı adı: admin, Şifre: admin123', 'error');
       }
+      setLoginLoading(false);
     };
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-900 to-purple-900 flex items-center justify-center">
-        <div className="bg-white p-8 rounded-lg shadow-2xl w-96">
-          <h1 className="text-3xl font-bold text-center mb-8 text-gray-800">
-            Sosyal Medya Etkileşim Takip Sistemi
-          </h1>
+      <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 flex items-center justify-center p-4">
+        <div className="absolute inset-0 bg-black opacity-20"></div>
+        <div className="relative z-10 bg-white/10 backdrop-blur-lg p-8 rounded-2xl shadow-2xl w-full max-w-md border border-white/20">
+          <div className="text-center mb-8">
+            <div className="mx-auto w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mb-6">
+              <span className="text-3xl">📊</span>
+            </div>
+            <h1 className="text-3xl font-bold text-white mb-2">
+              Sosyal Medya Takip
+            </h1>
+            <p className="text-gray-300 text-sm">
+              Etkileşim analizi ve raporlama sistemi
+            </p>
+          </div>
+          
           <form onSubmit={handleLogin} className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-300 mb-2">
                 Kullanıcı Adı
               </label>
               <input
                 type="text"
                 value={credentials.username}
                 onChange={(e) => setCredentials({...credentials, username: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-gray-400"
+                placeholder="Kullanıcı adınızı girin"
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-300 mb-2">
                 Şifre
               </label>
               <input
                 type="password"
                 value={credentials.password}
                 onChange={(e) => setCredentials({...credentials, password: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-gray-400"
+                placeholder="Şifrenizi girin"
                 required
               />
             </div>
             <button
               type="submit"
-              className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-200"
+              disabled={loginLoading}
+              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-6 rounded-lg hover:from-blue-700 hover:to-purple-700 transition duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
             >
-              Giriş Yap
+              {loginLoading ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                  Giriş yapılıyor...
+                </>
+              ) : (
+                'Giriş Yap'
+              )}
             </button>
           </form>
-          <p className="text-sm text-gray-500 text-center mt-4">
-            Demo: admin / admin123
-          </p>
+          
+          <div className="mt-6 p-4 bg-blue-500/20 rounded-lg border border-blue-400/30">
+            <p className="text-sm text-blue-200 text-center">
+              <span className="font-medium">Demo Bilgileri:</span><br />
+              Kullanıcı Adı: <span className="font-mono">admin</span><br />
+              Şifre: <span className="font-mono">admin123</span>
+            </p>
+          </div>
         </div>
       </div>
     );
