@@ -453,33 +453,57 @@ async def debug_normalization(post_id: str, _: str = Depends(authenticate_admin)
     
     # Get management users
     management_users = await db.users.find({"platform": post["platform"]}).to_list(1000)
-    management_usernames = [(user["username"], user["username"]) for user in management_users]
     
     # Get engagement users
     engagements = await db.engagements.find({"post_id": post_id}).to_list(1000)
-    engagement_usernames = [(eng["username"], eng["username"]) for eng in engagements]
     
-    # Find matches and mismatches
+    # Detailed comparison
+    management_usernames = [user["username"] for user in management_users]
+    engagement_usernames = [eng["username"] for eng in engagements]
+    
+    # Find exact matches and mismatches
     matches = []
     mismatches = []
     
-    for mgmt_user in [u[0] for u in management_usernames]:
-        if mgmt_user in [e[0] for e in engagement_usernames]:
+    engagement_set = set(engagement_usernames)
+    
+    for mgmt_user in management_usernames:
+        if mgmt_user in engagement_set:
             matches.append(mgmt_user)
         else:
             mismatches.append(mgmt_user)
     
+    # Find engagement users not in management
+    mgmt_set = set(management_usernames)
+    extra_engagements = [eng for eng in engagement_usernames if eng not in mgmt_set]
+    
     return {
         "post_title": post["title"],
         "platform": post["platform"],
-        "management_users": dict(management_usernames[:10]),  # First 10 for display
-        "engagement_users": dict(engagement_usernames[:10]),  # First 10 for display
-        "total_management": len(management_usernames),
-        "total_engagement": len(engagement_usernames),
-        "matches": matches[:10],  # First 10 matches
-        "mismatches": mismatches[:10],  # First 10 mismatches
-        "match_count": len(matches),
-        "mismatch_count": len(mismatches)
+        "management_users": {
+            "count": len(management_usernames),
+            "sample": management_usernames[:10],
+            "all": management_usernames  # Return all for debugging
+        },
+        "engagement_users": {
+            "count": len(engagement_usernames), 
+            "sample": engagement_usernames[:10],
+            "all": engagement_usernames  # Return all for debugging
+        },
+        "analysis": {
+            "matches": {
+                "count": len(matches),
+                "users": matches
+            },
+            "mismatches": {
+                "count": len(mismatches),
+                "users": mismatches
+            },
+            "extra_engagements": {
+                "count": len(extra_engagements),
+                "users": extra_engagements
+            }
+        }
     }
 async def export_analysis_pdf(post_id: str, _: str = Depends(authenticate_admin)):
     analysis = await analyze_engagement(post_id)
